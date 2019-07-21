@@ -20,12 +20,12 @@ _Note: May or may not be specific to iOS._
 -   Small constants usually OR'ed with zero register, e.g. `orr x0, xzr, 5`.
 -   Big constants usually loaded with `movz`+`movk`, e.g.:
     ```asm
-    movz x0, 0x1234, lsl 32
-    movk x0, 0x5678, lsl 16
+    movz x0, 0x1234, lsl 32     //movz: moves shifted 16-bit immediate to register, eg. left shift 0x1234 32bits and mov to x0
+    movk x0, 0x5678, lsl 16     //movk: Move 16-bit immediate into register, keeping other bits unchanged.
     movk x0, 0x9abc
     ```
     -> `x0 = 0x123456789abc`.
--   `movn` for negative values, e.g. `movn x0, 1` -> `x0 = -1`.
+-   `movn` for negative values, e.g. `movn x0, 1` -> `x0 = -1`.  (Move inverse of shifted 16-bit immediate to register.)
 -   `lsl` and `lsr` instructions = logic-shift-left and logic-shift-right, e.g. `lsl x0, x0, 8` -> `x0 <<= 8`.
     -   `lsl` and `lsr` not only used as instructions, but also as operands to other instructions (see `movz` above).
     -   `asl` for arithmetic shift also exists, but less frequently used.
@@ -53,8 +53,8 @@ _Note: May or may not be specific to iOS._
     -   Pre-indexing: `ldr x0, [x1, 0x10]!` (notice the `!`) -> `x1 += 0x10; x0 = *x1;`
     -   Post-indexing: `ldr x0, [x1], 0x10` -> `x0 = *x1; x1 += 0x10;`
 -   Memory addresses usually computed by PC-relative instructions:
-    -   `adr x0, 0x12345` (only works for small offset from PC)
-    -   Bigger ranges use `adrp`+`add`:
+    -   `adr x0, 0x12345` (only works for small offset from PC): 21-bit immediate num added to PC, can access PC +(or -) 1M bytes address range
+    -   Bigger ranges use `adrp`+`add`: 21-bit immesiate lsl 12 bits + PC << 12 bits, can access PC's 4K page start address + (or -) 4G bytess address range, in which 4G = 4K * 1M
         ```asm
         adrp x0, 0xffffff8012345000 ; "address of page", last 12 bits are always zero
         add x0, x0, 0x678
